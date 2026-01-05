@@ -1,147 +1,105 @@
-const navLinks = document.querySelectorAll('.ul-list li a');
-const sections = document.querySelectorAll('section');
 
-function removeActive() {
-  navLinks.forEach(link => link.parentElement.classList.remove('active'));
-}
 
-navLinks.forEach(link => {
-  link.addEventListener('click', e => {
-    e.preventDefault();
-    const targetId = link.getAttribute('href').substring(1);
-    const targetSection = document.getElementById(targetId);
+window.addEventListener("load", () => {
 
-    window.scrollTo({
-      top: targetSection.offsetTop - 80, 
-      behavior: 'smooth'
+    const animations = [
+        { selector: ".top-tags", class: "from-top", delay: 0 },
+        { selector: ".left h1", class: "from-left", delay: 0.3 },
+        { selector: ".desc", class: "from-left", delay: 0.6 },
+        { selector: ".live-line", class: "from-bottom", delay: 0.9 },
+        { selector: ".buttons", class: "zoom-in", delay: 1.2 },
+        { selector: ".site-link", class: "from-bottom", delay: 1.5 },
+        { selector: ".right", class: "from-right", delay: 0.6 },
+        { selector: ".stats", class: "from-bottom", delay: 1.8 },
+    ];
+
+    animations.forEach(item => {
+        const el = document.querySelector(item.selector);
+        if (el) {
+            el.style.animationDelay = `${item.delay}s`;
+            el.classList.add(item.class);
+        }
     });
 
-    removeActive();
-    link.parentElement.classList.add('active');
-  });
+    // ===== HIDE INTRO =====
+    setTimeout(() => {
+        const intro = document.getElementById("intro");
+        const site = document.getElementById("real-site");
+
+        intro.classList.add("smooth-out");
+
+        setTimeout(() => {
+            intro.style.display = "none";
+            site.style.display = "block";
+            initScrollAnimations(); 
+        }, 1200);
+    }, 3800);
 });
 
-window.addEventListener('scroll', () => {
-  let scrollPos = window.scrollY + 100;
 
-  sections.forEach(section => {
-    if (scrollPos >= section.offsetTop && scrollPos < section.offsetTop + section.offsetHeight) {
-      removeActive();
-      const activeLink = document.querySelector(`.ul-list li a[href="#${section.id}"]`);
-      if (activeLink) activeLink.parentElement.classList.add('active');
-    }
-  });
+// ===============================
+// SCROLL REVEAL (SECTIONS)
+// ===============================
+function initScrollAnimations() {
+    const elements = document.querySelectorAll(
+        ".slide-in-left, .slide-in-right, .slide-in-up"
+    );
 
-  if(window.scrollY > 500){
-    backToTop.style.display = "flex";
-  } else {
-    backToTop.style.display = "none";
-  }
+    const observer = new IntersectionObserver(
+        entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = "1";
+                    entry.target.style.transform = "translate(0)";
+                    observer.unobserve(entry.target);
+                }
+            });
+        },
+        { threshold: 0.2 }
+    );
 
-  revealElements.forEach(el => {
-    const windowHeight = window.innerHeight;
-    const elementTop = el.getBoundingClientRect().top;
-    const revealPoint = 150;
-
-    if(elementTop < windowHeight - revealPoint){
-      el.classList.add('active-reveal');
-    }
-  });
-});
-
-const revealElements = document.querySelectorAll('.home-container, .about-container, .projects-container, .services-container, .contact-content');
-revealElements.forEach(el => el.classList.add('reveal'));
-
-const backToTop = document.createElement('div');
-backToTop.innerHTML = '<i class="fa-solid fa-chevron-up"></i>';
-backToTop.id = "back-to-top";
-document.body.appendChild(backToTop);
-
-backToTop.style.cssText = `
-  position: fixed;
-  bottom: 40px;
-  right: 40px;
-  background: #474af0;
-  color: white;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 1000;
-  transition: transform 0.3s ease;
-`;
-
-backToTop.addEventListener('click', () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-backToTop.addEventListener('mouseover', () => backToTop.style.transform = 'scale(1.2)');
-backToTop.addEventListener('mouseout', () => backToTop.style.transform = 'scale(1)');
-
-const cards = document.querySelectorAll('.project-card, .c1, .service-card');
-cards.forEach(card => {
-  card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-8px) scale(1.05)');
-  card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0) scale(1)');
-});
-
-const typingElement = document.querySelector('.info-home h3'); 
-const words = ["Frontend Developer", "UI/UX Designer", "Web Enthusiast", "React Developer"];
-let wordIndex = 0;
-let charIndex = 0;
-let isDeleting = false;
-let typingSpeed = 100;
-
-function type() {
-    const currentWord = words[wordIndex];
-    let displayedText = currentWord.substring(0, charIndex);
-    
-    typingElement.innerHTML = displayedText + '<span class="cursor">|</span>';
-
-    if (!isDeleting && charIndex < currentWord.length) {
-        charIndex++;
-        setTimeout(type, typingSpeed);
-    } else if (isDeleting && charIndex > 0) {
-        charIndex--;
-        setTimeout(type, typingSpeed / 2);
-    } else {
-        isDeleting = !isDeleting;
-        if (!isDeleting) {
-            wordIndex = (wordIndex + 1) % words.length;
-        }
-        setTimeout(type, 1000);
-    }
+    elements.forEach(el => observer.observe(el));
 }
 
-document.addEventListener('DOMContentLoaded', type);
 
-document.addEventListener("DOMContentLoaded", () => {
-  const loadingText = document.getElementById("loading-text");
-  const mainIcon = document.querySelector(".main-icon");
-  const subIcons = document.querySelectorAll(".sub-icons i");
-  const designerText = document.getElementById("designer-text");
-  const mainPage = document.getElementById("main-page");
-  const loadingScreen = document.getElementById("loading-screen");
+// ===============================
 
-  function showElement(element, delay=0){
-    setTimeout(() => {
-      element.classList.remove("hidden");
-      element.classList.add("fall");
-    }, delay);
-  }
+const sections = document.querySelectorAll("section");
+const navItems = document.querySelectorAll(".ul-list li");
 
-  showElement(loadingText, 0);          
-  showElement(mainIcon, 800);         
-  subIcons.forEach((icon, idx) => {
-    showElement(icon, 1600 + idx*400);  
-  });
-  showElement(designerText, 2800);    
+window.addEventListener("scroll", () => {
+    let current = "";
 
-  setTimeout(() => {
-    loadingScreen.style.opacity = '0';
-    setTimeout(() => loadingScreen.style.display='none', 500);
-    mainPage.classList.add("visible");
-  }, 4000);
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop - 200;
+        const sectionHeight = section.clientHeight;
+
+        if (scrollY >= sectionTop && scrollY < sectionTop + sectionHeight) {
+            current = section.getAttribute("id");
+        }
+    });
+
+    navItems.forEach(item => {
+        item.classList.remove("active");
+
+        const link = item.querySelector("a");
+        if (link && link.getAttribute("href") === `#${current}`) {
+            item.classList.add("active");
+        }
+    });
+});
+
+// ===============================
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener("click", function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute("href"));
+
+        if (target) {
+            window.scrollTo({
+                top: target.offsetTop - 120,
+                behavior: "smooth"
+            });
+        }
+    });
 });
